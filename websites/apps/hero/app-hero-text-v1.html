@@ -1,0 +1,558 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Hero Block Generator</title>
+
+    <meta name="description" content="Create and customise a responsive text hero block with editable headings and appearance settings.">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+
+    <!-- HERO STYLES: shared by preview and exported HTML -->
+    <style type="text/tailwindcss">
+
+        .hero {
+            @apply flex flex-col justify-center px-6 py-12 md:px-16;
+        }
+
+        .hero-content {
+            @apply w-full max-w-5xl;
+        }
+
+        .hero-light {
+            @apply bg-slate-50;
+        }
+
+        .hero-dark {
+            @apply bg-slate-900;
+        }
+
+        .hero-centre {
+            @apply text-center;
+        }
+
+        .hero-min-height {
+            @apply min-h-[480px] md:min-h-[85vh];
+        }
+
+        .hero h1 {
+            @apply mb-6 text-4xl font-bold tracking-tight text-slate-900 md:text-6xl break-words;
+        }
+
+        .hero h2 {
+            @apply text-xl leading-relaxed text-slate-700 md:text-2xl break-words;
+        }
+
+        .hero-dark h1 {
+            @apply text-slate-50;
+        }
+
+        .hero-dark h2 {
+            @apply text-slate-300;
+        }
+
+        .hero-centre .hero-content {
+            @apply mx-auto;
+        }
+
+        .hero h2[hidden] {
+            display: none;
+        }
+
+    </style>
+
+    <!-- EDITOR INTERFACE STYLES -->
+    <style>
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #e2e8f0;
+            color: #0f172a;
+            padding-bottom: 90px;
+        }
+
+        .app-container {
+            max-width: 1200px;
+            margin: auto;
+            padding: 24px;
+        }
+
+        .app-title {
+            margin-bottom: 20px;
+            font-size: 26px;
+            font-weight: bold;
+        }
+
+        .control-panel {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 16px;
+            padding: 18px;
+            margin-bottom: 24px;
+            background: white;
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+        }
+
+        .control-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .control-label input {
+            width: 17px;
+            height: 17px;
+            accent-color: #2563eb;
+            cursor: pointer;
+        }
+
+        .control-label:focus-within {
+            outline: 2px solid #2563eb;
+            outline-offset: 4px;
+            border-radius: 3px;
+        }
+
+        .instruction {
+            margin: 0 0 12px;
+            color: #475569;
+            font-size: 14px;
+        }
+
+        .hero h1[contenteditable="true"],
+        .hero h2[contenteditable="true"] {
+            cursor: text;
+        }
+
+        .hero h1[contenteditable="true"]:focus,
+        .hero h2[contenteditable="true"]:focus {
+            outline: 3px dashed #3b82f6;
+            outline-offset: 6px;
+            border-radius: 3px;
+        }
+
+        .copy-button {
+            position: fixed;
+            right: 24px;
+            bottom: 24px;
+            z-index: 10;
+            padding: 14px 22px;
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 12px #00000030;
+        }
+
+        .copy-button:hover {
+            background: #1d4ed8;
+        }
+
+        .copy-button:focus-visible {
+            outline: 3px solid #0f172a;
+            outline-offset: 3px;
+        }
+
+        .status-message {
+            margin-top: 14px;
+            font-size: 14px;
+            color: #166534;
+        }
+
+        .export-area {
+            margin-top: 20px;
+        }
+
+        .export-area label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        .export-area textarea {
+            width: 100%;
+            min-height: 240px;
+            padding: 12px;
+            box-sizing: border-box;
+            font-family: monospace;
+            font-size: 13px;
+            border: 1px solid #94a3b8;
+            border-radius: 6px;
+        }
+
+        @media (max-width: 600px) {
+            .app-container {
+                padding: 14px;
+            }
+
+            .control-panel {
+                gap: 14px;
+            }
+
+            .copy-button {
+                right: 14px;
+                bottom: 14px;
+            }
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+    <main class="app-container">
+
+        <h1 class="app-title">Hero Block Generator</h1>
+
+        <!-- CONTROL PANEL -->
+        <section class="control-panel" aria-label="Hero settings">
+
+            <label class="control-label">
+                <input type="checkbox" id="darkAppearance">
+                Dark appearance
+            </label>
+
+            <label class="control-label">
+                <input type="checkbox" id="centreText">
+                Centre text
+            </label>
+
+            <label class="control-label">
+                <input type="checkbox" id="minimumHeight" checked>
+                Minimum height
+            </label>
+
+            <label class="control-label">
+                <input type="checkbox" id="showSubheading" checked>
+                Show subheading
+            </label>
+
+        </section>
+
+        <p class="instruction">
+            Click a heading to edit the text.
+        </p>
+
+        <!-- HERO PREVIEW -->
+        <header id="hero" class="hero hero-light hero-min-height">
+
+            <div class="hero-content">
+
+                <h1
+                    id="heroHeading"
+                    contenteditable="plaintext-only"
+                    aria-label="Edit main heading"
+                    spellcheck="false"
+                >Lorem ipsum dolor sit amet</h1>
+
+                <h2
+                    id="heroSubheading"
+                    contenteditable="plaintext-only"
+                    aria-label="Edit subheading"
+                    spellcheck="false"
+                >Consectetur adipiscing elit. Integer vitae libero ac risus egestas placerat.</h2>
+
+            </div>
+
+        </header>
+
+        <!-- ACCESSIBLE STATUS -->
+        <p
+            id="statusMessage"
+            class="status-message"
+            role="status"
+            aria-live="polite"
+        ></p>
+
+        <!-- FALLBACK EXPORT AREA -->
+        <div id="exportArea" class="export-area" hidden>
+
+            <label for="exportCode">
+                Copy the HTML below manually:
+            </label>
+
+            <textarea
+                id="exportCode"
+                readonly
+                aria-label="Generated HTML code"
+            ></textarea>
+
+        </div>
+
+    </main>
+
+    <!-- COPY BUTTON -->
+    <button id="copyButton" class="copy-button" type="button">
+        Copy HTML
+    </button>
+
+
+    <script>
+
+        // Get the HTML elements
+        const hero = document.getElementById("hero");
+
+        const heroHeading = document.getElementById("heroHeading");
+
+        const heroSubheading = document.getElementById("heroSubheading");
+
+        const darkAppearance = document.getElementById("darkAppearance");
+
+        const centreText = document.getElementById("centreText");
+
+        const minimumHeight = document.getElementById("minimumHeight");
+
+        const showSubheading = document.getElementById("showSubheading");
+
+        const copyButton = document.getElementById("copyButton");
+
+        const statusMessage = document.getElementById("statusMessage");
+
+        const exportArea = document.getElementById("exportArea");
+
+        const exportCode = document.getElementById("exportCode");
+
+
+        // Store the four checkbox settings
+        const settings = {
+            dark: darkAppearance.checked,
+            centre: centreText.checked,
+            minHeight: minimumHeight.checked,
+            showH2: showSubheading.checked
+        };
+
+
+        // Update the hero appearance without replacing its content
+        function updateHero() {
+
+            settings.dark = darkAppearance.checked;
+            settings.centre = centreText.checked;
+            settings.minHeight = minimumHeight.checked;
+            settings.showH2 = showSubheading.checked;
+
+            // Update light and dark appearance
+            hero.classList.toggle("hero-dark", settings.dark);
+
+            hero.classList.toggle("hero-light", !settings.dark);
+
+            // Update text alignment
+            hero.classList.toggle("hero-centre", settings.centre);
+
+            // Update minimum height
+            hero.classList.toggle("hero-min-height", settings.minHeight);
+
+            // Show or hide the subheading
+            heroSubheading.hidden = !settings.showH2;
+
+            // Keep exported HTML updated
+            updateExportCode();
+        }
+
+
+        // Escape special HTML characters in heading text
+        function escapeHTML(text) {
+
+            return text.replace(/[&<>"']/g, function(character) {
+
+                const characters = {
+                    "&": "&amp;",
+                    "<": "&lt;",
+                    ">": "&gt;",
+                    '"': "&quot;",
+                    "'": "&#39;"
+                };
+
+                return characters[character];
+
+            });
+
+        }
+
+
+        // Generate a complete standalone HTML document
+        function generateHTML() {
+
+            const headingText = escapeHTML(heroHeading.textContent);
+
+            const subheadingText = escapeHTML(heroSubheading.textContent);
+
+            // Build the hero class list
+            const heroClasses = [
+                "hero",
+                settings.dark ? "hero-dark" : "hero-light",
+                settings.centre ? "hero-centre" : "",
+                settings.minHeight ? "hero-min-height" : ""
+            ].filter(Boolean).join(" ");
+
+            // Include the H2 only when requested
+            const subheadingHTML = settings.showH2
+                ? `<h2>${subheadingText}</h2>`
+                : "";
+
+            // Return the complete HTML page
+            return `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>My Hero Block</title>
+
+    <meta name="description" content="Short, unique description of web page. Often used as the snippet shown in search results. About 120 characters is ideal.">
+
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"><\/script>
+
+    <style type="text/tailwindcss">
+
+        .hero {
+            @apply flex flex-col justify-center px-6 py-12 md:px-16;
+        }
+
+        .hero-content {
+            @apply w-full max-w-5xl;
+        }
+
+        .hero-light {
+            @apply bg-slate-50;
+        }
+
+        .hero-dark {
+            @apply bg-slate-900;
+        }
+
+        .hero-centre {
+            @apply text-center;
+        }
+
+        .hero-min-height {
+            @apply min-h-[480px] md:min-h-[85vh];
+        }
+
+        .hero h1 {
+            @apply mb-6 text-4xl font-bold tracking-tight text-slate-900 md:text-6xl break-words;
+        }
+
+        .hero h2 {
+            @apply text-xl leading-relaxed text-slate-700 md:text-2xl break-words;
+        }
+
+        .hero-dark h1 {
+            @apply text-slate-50;
+        }
+
+        .hero-dark h2 {
+            @apply text-slate-300;
+        }
+
+        .hero-centre .hero-content {
+            @apply mx-auto;
+        }
+
+        .hero h2[hidden] {
+            display: none;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+    <header class="${heroClasses}">
+        <div class="hero-content">
+            <h1>${headingText}</h1>
+            ${subheadingHTML}
+        </div>
+    </header>
+
+</body>
+</html>`;
+
+        }
+
+
+        // Keep the fallback textarea up to date
+        function updateExportCode() {
+
+            exportCode.value = generateHTML();
+
+        }
+
+
+        // Copy the generated HTML
+        async function copyHTML() {
+
+            const generatedHTML = generateHTML();
+
+            try {
+
+                if (!navigator.clipboard || !window.isSecureContext) {
+                    throw new Error("Clipboard unavailable");
+                }
+
+                await navigator.clipboard.writeText(generatedHTML);
+
+                statusMessage.textContent =
+                    "HTML copied—paste it into VS Code.";
+
+                exportArea.hidden = true;
+
+            } catch (error) {
+
+                // Show the generated HTML for manual copying
+                exportCode.value = generatedHTML;
+
+                exportArea.hidden = false;
+
+                statusMessage.textContent =
+                    "Automatic copying is unavailable. Copy the HTML from the text area below.";
+
+                exportCode.focus();
+
+                exportCode.select();
+
+            }
+
+        }
+
+
+        // Listen for checkbox changes
+        darkAppearance.addEventListener("change", updateHero);
+
+        centreText.addEventListener("change", updateHero);
+
+        minimumHeight.addEventListener("change", updateHero);
+
+        showSubheading.addEventListener("change", updateHero);
+
+
+        // Update exported HTML when headings are edited
+        heroHeading.addEventListener("input", updateExportCode);
+
+        heroSubheading.addEventListener("input", updateExportCode);
+
+
+        // Listen for the Copy HTML button
+        copyButton.addEventListener("click", copyHTML);
+
+
+        // Set the initial appearance
+        updateHero();
+
+    </script>
+
+</body>
+</html>

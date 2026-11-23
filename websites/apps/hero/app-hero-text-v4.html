@@ -1,0 +1,1580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Hero Block Generator</title>
+    <meta name="description" content="Create and customise a responsive text hero block with editable headings and appearance settings.">
+
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+
+    <!-- Generate all Tailwind palette colour variables -->
+    <style type="text/tailwindcss">
+        @source inline("bg-{slate,gray,zinc,neutral,stone,red,orange,amber,yellow,lime,green,emerald,teal,cyan,sky,blue,indigo,violet,purple,fuchsia,pink,rose}-{50,100,200,300,400,500,600,700,800,900,950} bg-black bg-white");
+    </style>
+
+    <!-- SHARED HERO STYLES -->
+    <style type="text/tailwindcss">
+        .hero {
+            @apply flex flex-col justify-center px-6 py-12 md:px-16;
+        }
+
+        .hero-content {
+            @apply w-full max-w-5xl;
+        }
+
+        .hero-light {
+            @apply bg-slate-50;
+        }
+
+        .hero-dark {
+            @apply bg-slate-900;
+        }
+
+        .hero-centre {
+            @apply text-center;
+        }
+
+        .hero-min-height {
+            @apply min-h-[480px] md:min-h-[85vh];
+        }
+
+        .hero h1 {
+            @apply mb-6 text-4xl font-bold tracking-tight text-slate-900 md:text-6xl break-words;
+        }
+
+        .hero h2 {
+            @apply text-xl leading-relaxed text-slate-700 md:text-2xl break-words;
+        }
+
+        .hero-dark h1 {
+            @apply text-slate-50;
+        }
+
+        .hero-dark h2 {
+            @apply text-slate-300;
+        }
+
+        .hero-centre .hero-content {
+            @apply mx-auto;
+        }
+
+        .hero h2[hidden] {
+            display: none;
+        }
+
+        .hero-h1-serif h1 {
+            @apply font-serif;
+        }
+
+        .hero-h2-serif h2 {
+            @apply font-serif;
+        }
+    </style>
+
+    <!-- LETTER SPACING STYLES -->
+    <style id="headingEffectsStyles">
+        .hero h1 {
+            letter-spacing: -0.05em;
+        }
+
+        .hero h2 {
+            letter-spacing: -0.025em;
+        }
+    </style>
+
+    <!-- SHARED CUSTOM COLOUR AND GRADIENT STYLES -->
+    <style id="heroColorStyles">
+        .hero {
+            background-color: var(--color-slate-50) !important;
+            background-image: none !important;
+        }
+
+        .hero h1 {
+            color: var(--color-slate-900) !important;
+        }
+
+        .hero h2 {
+            color: var(--color-slate-700) !important;
+        }
+    </style>
+
+    <!-- PALETTE SWATCH COLOURS -->
+    <style id="paletteSwatchStyles"></style>
+
+    <!-- EDITOR INTERFACE STYLES -->
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #e2e8f0;
+            color: #0f172a;
+            padding-bottom: 90px;
+        }
+
+        .app-container {
+            max-width: 1250px;
+            margin: auto;
+            padding: 24px;
+        }
+
+        .app-title {
+            margin-bottom: 20px;
+            font-size: 26px;
+            font-weight: bold;
+        }
+
+        .control-panel {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 16px;
+            padding: 18px;
+            margin-bottom: 20px;
+            background: white;
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+        }
+
+        .control-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .control-label select {
+            padding: 7px 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            background: white;
+            font: inherit;
+        }
+
+        .control-label input {
+            width: 17px;
+            height: 17px;
+            accent-color: #2563eb;
+            cursor: pointer;
+        }
+
+        .control-label:focus-within,
+        .effect-control:focus-within {
+            outline: 2px solid #2563eb;
+            outline-offset: 4px;
+            border-radius: 3px;
+        }
+
+        .effect-panel {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .effect-group {
+            padding: 18px;
+            background: white;
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+        }
+
+        .effect-group h2 {
+            margin: 0 0 16px;
+            font-size: 17px;
+        }
+
+        .effect-control {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 16px;
+            font-size: 14px;
+        }
+
+        .effect-control input[type="range"] {
+            flex: 1;
+            min-width: 120px;
+            accent-color: #2563eb;
+        }
+
+        .effect-control output {
+            min-width: 65px;
+            font-family: monospace;
+            font-weight: bold;
+            text-align: right;
+        }
+
+        .effect-control:has(input:disabled) {
+            opacity: 0.45;
+        }
+
+        /* COLOUR PALETTE */
+
+        .palette-panel {
+            background: white;
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            padding: 18px;
+            margin-bottom: 24px;
+        }
+
+        .palette-panel h2 {
+            margin: 0 0 16px;
+            font-size: 19px;
+        }
+
+        .palette-targets {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .target-button {
+            padding: 10px 18px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            background: #f8fafc;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .target-button[aria-pressed="true"] {
+            background: #1d4ed8;
+            color: white;
+            border-color: #1d4ed8;
+        }
+
+        .target-button:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .target-button:focus-visible,
+        .swatch:focus-visible,
+        .special-swatch:focus-visible {
+            outline: 3px solid #2563eb;
+            outline-offset: 3px;
+        }
+
+        .active-colour {
+            margin-bottom: 18px;
+            padding: 12px;
+            background: #f1f5f9;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .palette-scroll {
+            max-width: 100%;
+            overflow-x: auto;
+            overscroll-behavior-x: contain;
+            padding: 8px 4px 16px;
+        }
+
+        .palette-grid {
+            display: grid;
+            grid-template-columns: 110px repeat(11, 42px);
+            gap: 6px;
+            width: max-content;
+        }
+
+        .palette-header {
+            text-align: center;
+            font-size: 11px;
+            font-weight: bold;
+            color: #475569;
+        }
+
+        .palette-family {
+            display: flex;
+            align-items: center;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .swatch {
+            width: 42px;
+            height: 34px;
+            border: 2px solid #cbd5e1;
+            border-radius: 5px;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .swatch:hover {
+            transform: scale(1.08);
+            border-color: #0f172a;
+        }
+
+        .swatch[aria-pressed="true"] {
+            outline: 3px solid #2563eb;
+            outline-offset: 2px;
+            border-color: #0f172a;
+        }
+
+        .swatch[aria-pressed="true"]::after {
+            content: "✓";
+            position: absolute;
+            inset: 0;
+            display: grid;
+            place-items: center;
+            color: white;
+            font-weight: bold;
+            text-shadow: 0 1px 3px black;
+        }
+
+        .special-colours {
+            display: flex;
+            gap: 10px;
+            margin-top: 18px;
+            align-items: center;
+        }
+
+        .special-colours strong {
+            font-size: 13px;
+        }
+
+        .special-swatch {
+            width: 48px;
+            height: 38px;
+            border: 2px solid #94a3b8;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .special-swatch[aria-pressed="true"] {
+            outline: 3px solid #2563eb;
+            outline-offset: 2px;
+        }
+
+        .instruction {
+            margin: 0 0 12px;
+            color: #475569;
+            font-size: 14px;
+        }
+
+        .hero h1[contenteditable="true"],
+        .hero h2[contenteditable="true"] {
+            cursor: text;
+        }
+
+        .hero h1[contenteditable="true"]:focus,
+        .hero h2[contenteditable="true"]:focus {
+            outline: 3px dashed #3b82f6;
+            outline-offset: 6px;
+        }
+
+        .copy-button {
+            position: fixed;
+            right: 24px;
+            bottom: 24px;
+            z-index: 10;
+            padding: 14px 22px;
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 12px #00000030;
+        }
+
+        .copy-button:hover {
+            background: #1d4ed8;
+        }
+
+        .copy-button:focus-visible {
+            outline: 3px solid #0f172a;
+            outline-offset: 3px;
+        }
+
+        .status-message {
+            margin-top: 14px;
+            font-size: 14px;
+            color: #166534;
+        }
+
+        .export-area {
+            margin-top: 20px;
+        }
+
+        .export-area label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        .export-area textarea {
+            width: 100%;
+            min-height: 240px;
+            padding: 12px;
+            box-sizing: border-box;
+            font-family: monospace;
+            font-size: 13px;
+            border: 1px solid #94a3b8;
+            border-radius: 6px;
+        }
+
+        @media (max-width: 600px) {
+            .app-container {
+                padding: 14px;
+            }
+
+            .control-panel {
+                gap: 14px;
+            }
+
+            .copy-button {
+                right: 14px;
+                bottom: 14px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<main class="app-container">
+
+    <h1 class="app-title">Hero Block Generator</h1>
+
+    <!-- MAIN SETTINGS -->
+    <section class="control-panel" aria-label="Hero settings">
+
+        <label class="control-label">
+            <input type="checkbox" id="darkAppearance">
+            Dark appearance preset
+        </label>
+
+        <label class="control-label">
+            <input type="checkbox" id="centreText">
+            Centre text
+        </label>
+
+        <label class="control-label">
+            <input type="checkbox" id="minimumHeight" checked>
+            Minimum height
+        </label>
+
+        <label class="control-label">
+            <input type="checkbox" id="showSubheading" checked>
+            Show subheading
+        </label>
+
+        <label class="control-label">
+            <input type="checkbox" id="gradientBackground">
+            Gradient background
+        </label>
+
+        <label class="control-label" id="gradientDirectionControl" hidden>
+            Direction
+            <select id="gradientDirection">
+                <option value="to right">Left to right</option>
+                <option value="to left">Right to left</option>
+                <option value="to bottom">Top to bottom</option>
+                <option value="to top">Bottom to top</option>
+            </select>
+        </label>
+
+    </section>
+
+    <!-- HEADING EFFECTS -->
+    <section class="effect-panel" aria-label="Heading effects">
+
+        <div class="effect-group">
+
+            <h2>H1 Effects</h2>
+
+            <label class="control-label effect-control">
+                <input type="checkbox" id="h1Serif">
+                Serif font
+            </label>
+
+            <label class="effect-control" for="h1Spacing">
+                Letter spacing
+
+                <input
+                    type="range"
+                    id="h1Spacing"
+                    min="-0.05"
+                    max="0.10"
+                    step="0.005"
+                    value="-0.05"
+                >
+
+                <output id="h1SpacingValue">-0.050em</output>
+            </label>
+
+        </div>
+
+        <div class="effect-group">
+
+            <h2>H2 Effects</h2>
+
+            <label class="control-label effect-control">
+                <input type="checkbox" id="h2Serif">
+                Serif font
+            </label>
+
+            <label class="effect-control" for="h2Spacing">
+                Letter spacing
+
+                <input
+                    type="range"
+                    id="h2Spacing"
+                    min="-0.05"
+                    max="0.10"
+                    step="0.005"
+                    value="-0.025"
+                >
+
+                <output id="h2SpacingValue">-0.025em</output>
+            </label>
+
+        </div>
+
+    </section>
+
+    <!-- COLOUR PALETTE -->
+    <section class="palette-panel" aria-label="Hero colour palette">
+
+        <h2>Colour Palette</h2>
+
+        <div class="palette-targets" aria-label="Choose colour target">
+
+            <button
+                type="button"
+                class="target-button"
+                data-target="background"
+                aria-pressed="true"
+            >Background</button>
+
+            <button
+                type="button"
+                class="target-button"
+                data-target="start"
+                aria-pressed="false"
+                hidden
+            >Start colour</button>
+
+            <button
+                type="button"
+                class="target-button"
+                data-target="end"
+                aria-pressed="false"
+                hidden
+            >End colour</button>
+
+            <button
+                type="button"
+                class="target-button"
+                data-target="h1"
+                aria-pressed="false"
+            >H1</button>
+
+            <button
+                type="button"
+                class="target-button"
+                data-target="h2"
+                aria-pressed="false"
+            >H2</button>
+
+        </div>
+
+        <p class="active-colour" id="activeColour" aria-live="polite">
+            Active target: BACKGROUND | Selected colour: slate-50
+        </p>
+
+        <div
+            class="palette-scroll"
+            tabindex="0"
+            aria-label="Scrollable Tailwind colour palette"
+        >
+            <div class="palette-grid" id="paletteGrid">
+                <!-- Generated by JavaScript -->
+            </div>
+        </div>
+
+        <div class="special-colours">
+
+            <strong>Special colours:</strong>
+
+            <button
+                type="button"
+                class="special-swatch"
+                data-colour="black"
+                aria-label="Select black"
+                aria-pressed="false"
+                title="Black"
+            ></button>
+
+            <button
+                type="button"
+                class="special-swatch"
+                data-colour="white"
+                aria-label="Select white"
+                aria-pressed="false"
+                title="White"
+            ></button>
+
+        </div>
+
+    </section>
+
+    <p class="instruction">
+        Click a heading to edit the text.
+    </p>
+
+    <!-- HERO PREVIEW -->
+    <header id="hero" class="hero hero-light hero-min-height">
+
+        <div class="hero-content">
+
+            <h1
+                id="heroHeading"
+                contenteditable="plaintext-only"
+                aria-label="Edit main heading"
+                spellcheck="false"
+            >Lorem ipsum dolor sit amet</h1>
+
+            <h2
+                id="heroSubheading"
+                contenteditable="plaintext-only"
+                aria-label="Edit subheading"
+                spellcheck="false"
+            >Consectetur adipiscing elit. Integer vitae libero ac risus egestas placerat.</h2>
+
+        </div>
+
+    </header>
+
+    <!-- STATUS -->
+    <p
+        id="statusMessage"
+        class="status-message"
+        role="status"
+        aria-live="polite"
+    ></p>
+
+    <!-- FALLBACK EXPORT -->
+    <div id="exportArea" class="export-area" hidden>
+
+        <label for="exportCode">
+            Copy the HTML below manually:
+        </label>
+
+        <textarea id="exportCode" readonly></textarea>
+
+    </div>
+
+</main>
+
+<button id="copyButton" class="copy-button" type="button">
+    Copy HTML
+</button>
+
+<script>
+
+    // HTML ELEMENTS
+
+    const hero = document.getElementById("hero");
+    const heroHeading = document.getElementById("heroHeading");
+    const heroSubheading = document.getElementById("heroSubheading");
+
+    const darkAppearance = document.getElementById("darkAppearance");
+    const centreText = document.getElementById("centreText");
+    const minimumHeight = document.getElementById("minimumHeight");
+    const showSubheading = document.getElementById("showSubheading");
+
+    const gradientBackground = document.getElementById("gradientBackground");
+    const gradientDirection = document.getElementById("gradientDirection");
+    const gradientDirectionControl = document.getElementById("gradientDirectionControl");
+
+    const h1Serif = document.getElementById("h1Serif");
+    const h2Serif = document.getElementById("h2Serif");
+
+    const h1Spacing = document.getElementById("h1Spacing");
+    const h2Spacing = document.getElementById("h2Spacing");
+
+    const h1SpacingValue = document.getElementById("h1SpacingValue");
+    const h2SpacingValue = document.getElementById("h2SpacingValue");
+
+    const headingEffectsStyles = document.getElementById("headingEffectsStyles");
+    const heroColorStyles = document.getElementById("heroColorStyles");
+    const paletteSwatchStyles = document.getElementById("paletteSwatchStyles");
+
+    const paletteGrid = document.getElementById("paletteGrid");
+    const activeColour = document.getElementById("activeColour");
+
+    const targetButtons = document.querySelectorAll(".target-button");
+    const specialSwatches = document.querySelectorAll(".special-swatch");
+
+    const copyButton = document.getElementById("copyButton");
+    const statusMessage = document.getElementById("statusMessage");
+    const exportArea = document.getElementById("exportArea");
+    const exportCode = document.getElementById("exportCode");
+
+
+    // TAILWIND COLOUR PALETTE
+
+    const colourFamilies = [
+        "slate",
+        "gray",
+        "zinc",
+        "neutral",
+        "stone",
+        "red",
+        "orange",
+        "amber",
+        "yellow",
+        "lime",
+        "green",
+        "emerald",
+        "teal",
+        "cyan",
+        "sky",
+        "blue",
+        "indigo",
+        "violet",
+        "purple",
+        "fuchsia",
+        "pink",
+        "rose"
+    ];
+
+    const colourShades = [
+        50, 100, 200, 300, 400, 500,
+        600, 700, 800, 900, 950
+    ];
+
+
+    // SETTINGS OBJECT
+
+    const settings = {
+
+        dark: darkAppearance.checked,
+        centre: centreText.checked,
+        minHeight: minimumHeight.checked,
+        showH2: showSubheading.checked,
+
+        h1Serif: h1Serif.checked,
+        h2Serif: h2Serif.checked,
+
+        h1Spacing: Number(h1Spacing.value),
+        h2Spacing: Number(h2Spacing.value),
+
+        activeTarget: "background",
+
+        gradientEnabled: gradientBackground.checked,
+        gradientDirection: gradientDirection.value,
+        gradientInitialised: false,
+
+        colours: {
+            background: "slate-50",
+            start: "slate-50",
+            end: "blue-500",
+            h1: "slate-900",
+            h2: "slate-700"
+        }
+
+    };
+
+
+    // CREATE THE COLOUR PALETTE
+
+    function createPalette() {
+
+        paletteGrid.innerHTML = "";
+
+        // Create the shade heading row
+
+        const emptyCell = document.createElement("div");
+        paletteGrid.appendChild(emptyCell);
+
+        colourShades.forEach(function(shade) {
+
+            const heading = document.createElement("div");
+
+            heading.className = "palette-header";
+            heading.textContent = shade;
+
+            paletteGrid.appendChild(heading);
+
+        });
+
+
+        // Create the colour family rows
+
+        colourFamilies.forEach(function(family) {
+
+            const familyLabel = document.createElement("div");
+
+            familyLabel.className = "palette-family";
+
+            familyLabel.textContent =
+                family.charAt(0).toUpperCase() + family.slice(1);
+
+            paletteGrid.appendChild(familyLabel);
+
+            colourShades.forEach(function(shade) {
+
+                const colourName = family + "-" + shade;
+
+                const swatch = document.createElement("button");
+
+                swatch.type = "button";
+                swatch.className = "swatch";
+                swatch.dataset.colour = colourName;
+
+                swatch.setAttribute(
+                    "aria-label",
+                    "Select " + colourName
+                );
+
+                swatch.setAttribute("aria-pressed", "false");
+                swatch.title = colourName;
+
+                paletteGrid.appendChild(swatch);
+
+            });
+
+        });
+
+
+        // Generate swatch CSS using Tailwind colour variables
+
+        let swatchCSS = "";
+
+        colourFamilies.forEach(function(family) {
+
+            colourShades.forEach(function(shade) {
+
+                const colourName = family + "-" + shade;
+
+                swatchCSS += `
+                    .swatch[data-colour="${colourName}"] {
+                        background-color: var(--color-${colourName});
+                    }
+                `;
+
+            });
+
+        });
+
+        swatchCSS += `
+            .special-swatch[data-colour="black"] {
+                background-color: var(--color-black);
+            }
+
+            .special-swatch[data-colour="white"] {
+                background-color: var(--color-white);
+            }
+        `;
+
+        paletteSwatchStyles.textContent = swatchCSS;
+
+        updatePaletteSelection();
+
+    }
+
+
+    // UPDATE SELECTED COLOUR STYLES
+
+    function updateHeroColours() {
+
+        const backgroundRule = settings.gradientEnabled
+
+            ? `
+                background-color: transparent !important;
+                background-image: linear-gradient(
+                    ${settings.gradientDirection},
+                    var(--color-${settings.colours.start}),
+                    var(--color-${settings.colours.end})
+                ) !important;
+            `
+
+            : `
+                background-color: var(--color-${settings.colours.background}) !important;
+                background-image: none !important;
+            `;
+
+        heroColorStyles.textContent = `
+
+            .hero {
+                ${backgroundRule}
+            }
+
+            .hero h1 {
+                color: var(--color-${settings.colours.h1}) !important;
+            }
+
+            .hero h2 {
+                color: var(--color-${settings.colours.h2}) !important;
+            }
+
+        `;
+
+        updatePaletteSelection();
+        updateExportCode();
+
+    }
+
+
+    // UPDATE PALETTE BUTTON STATES
+
+    function updatePaletteSelection() {
+
+        const allSwatches = document.querySelectorAll(
+            ".swatch, .special-swatch"
+        );
+
+        allSwatches.forEach(function(swatch) {
+
+            const selected =
+                swatch.dataset.colour ===
+                settings.colours[settings.activeTarget];
+
+            swatch.setAttribute(
+                "aria-pressed",
+                selected ? "true" : "false"
+            );
+
+        });
+
+
+        // Show only targets available in the current mode
+
+        targetButtons.forEach(function(button) {
+
+            const target = button.dataset.target;
+
+            const visible =
+                target === "h1" ||
+                target === "h2" ||
+                (
+                    settings.gradientEnabled
+                        ? target === "start" || target === "end"
+                        : target === "background"
+                );
+
+            button.hidden = !visible;
+
+            button.disabled =
+                (target === "h2" && !settings.showH2) ||
+                !visible;
+
+            button.setAttribute(
+                "aria-pressed",
+                target === settings.activeTarget ? "true" : "false"
+            );
+
+        });
+
+
+        const targetNames = {
+            background: "Background",
+            start: "Start colour",
+            end: "End colour",
+            h1: "H1",
+            h2: "H2"
+        };
+
+        activeColour.textContent =
+            "Active target: " +
+            targetNames[settings.activeTarget].toUpperCase() +
+            " | Selected colour: " +
+            settings.colours[settings.activeTarget];
+
+        gradientDirectionControl.hidden = !settings.gradientEnabled;
+
+        gradientBackground.checked = settings.gradientEnabled;
+        gradientDirection.value = settings.gradientDirection;
+
+    }
+
+
+    // SELECT COLOUR TARGET
+
+    function selectTarget(target) {
+
+        const validTargets = settings.gradientEnabled
+            ? ["start", "end", "h1", "h2"]
+            : ["background", "h1", "h2"];
+
+        if (!validTargets.includes(target)) {
+            return;
+        }
+
+        if (target === "h2" && !settings.showH2) {
+            return;
+        }
+
+        settings.activeTarget = target;
+
+        updatePaletteSelection();
+
+    }
+
+
+    // SELECT A COLOUR
+
+    function selectColour(colourName) {
+
+        const target = settings.activeTarget;
+
+        settings.colours[target] = colourName;
+
+        updateHeroColours();
+
+    }
+
+
+    // RESET COLOURS USING LIGHT OR DARK PRESET
+
+    function updateColourPreset() {
+
+        if (settings.dark) {
+
+            settings.colours.background = "slate-900";
+            settings.colours.h1 = "slate-50";
+            settings.colours.h2 = "slate-300";
+
+        } else {
+
+            settings.colours.background = "slate-50";
+            settings.colours.h1 = "slate-900";
+            settings.colours.h2 = "slate-700";
+
+        }
+
+        // Gradient colours and direction are deliberately preserved.
+
+        updateHeroColours();
+
+    }
+
+
+    // UPDATE HEADING LETTER SPACING
+
+    function updateHeadingSpacing() {
+
+        headingEffectsStyles.textContent = `
+
+            .hero h1 {
+                letter-spacing: ${settings.h1Spacing}em;
+            }
+
+            .hero h2 {
+                letter-spacing: ${settings.h2Spacing}em;
+            }
+
+        `;
+
+        h1SpacingValue.textContent =
+            settings.h1Spacing.toFixed(3) + "em";
+
+        h2SpacingValue.textContent =
+            settings.h2Spacing.toFixed(3) + "em";
+
+    }
+
+
+    // UPDATE H2 EFFECT CONTROLS
+
+    function updateH2Controls() {
+
+        h2Serif.disabled = !settings.showH2;
+        h2Spacing.disabled = !settings.showH2;
+
+        if (!settings.showH2 && settings.activeTarget === "h2") {
+
+            settings.activeTarget =
+                settings.gradientEnabled ? "start" : "background";
+
+        }
+
+        updatePaletteSelection();
+
+    }
+
+
+    // SWITCH BETWEEN SOLID AND GRADIENT BACKGROUNDS
+
+    function updateGradientMode() {
+
+        const wasEnabled = settings.gradientEnabled;
+
+        settings.gradientEnabled = gradientBackground.checked;
+
+        // Initialise the gradient only the first time it is enabled.
+
+        if (
+            !wasEnabled &&
+            settings.gradientEnabled &&
+            !settings.gradientInitialised
+        ) {
+
+            settings.colours.start = settings.colours.background;
+            settings.colours.end = "blue-500";
+
+            settings.gradientInitialised = true;
+
+        }
+
+        // Keep the active target visible after switching modes.
+
+        const visibleTargets = settings.gradientEnabled
+            ? ["start", "end", "h1", "h2"]
+            : ["background", "h1", "h2"];
+
+        if (!visibleTargets.includes(settings.activeTarget)) {
+
+            settings.activeTarget =
+                settings.gradientEnabled ? "start" : "background";
+
+        }
+
+        updateHeroColours();
+
+    }
+
+
+    // UPDATE GRADIENT DIRECTION
+
+    function updateGradientDirection() {
+
+        settings.gradientDirection = gradientDirection.value;
+
+        updateHeroColours();
+
+    }
+
+
+    // UPDATE HERO APPEARANCE
+
+    function updateHero() {
+
+        settings.dark = darkAppearance.checked;
+        settings.centre = centreText.checked;
+        settings.minHeight = minimumHeight.checked;
+        settings.showH2 = showSubheading.checked;
+
+        settings.h1Serif = h1Serif.checked;
+        settings.h2Serif = h2Serif.checked;
+
+        hero.classList.toggle("hero-dark", settings.dark);
+        hero.classList.toggle("hero-light", !settings.dark);
+
+        hero.classList.toggle("hero-centre", settings.centre);
+
+        hero.classList.toggle(
+            "hero-min-height",
+            settings.minHeight
+        );
+
+        hero.classList.toggle(
+            "hero-h1-serif",
+            settings.h1Serif
+        );
+
+        hero.classList.toggle(
+            "hero-h2-serif",
+            settings.h2Serif
+        );
+
+        heroSubheading.hidden = !settings.showH2;
+
+        updateH2Controls();
+        updateExportCode();
+
+    }
+
+
+    // UPDATE H1 SPACING
+
+    function updateH1Spacing() {
+
+        settings.h1Spacing = Number(h1Spacing.value);
+
+        updateHeadingSpacing();
+        updateExportCode();
+
+    }
+
+
+    // UPDATE H2 SPACING
+
+    function updateH2Spacing() {
+
+        settings.h2Spacing = Number(h2Spacing.value);
+
+        updateHeadingSpacing();
+        updateExportCode();
+
+    }
+
+
+    // ESCAPE HTML CHARACTERS
+
+    function escapeHTML(text) {
+
+        return text.replace(/[&<>"']/g, function(character) {
+
+            const characters = {
+                "&": "&amp;",
+                "<": "&lt;",
+                ">": "&gt;",
+                '"': "&quot;",
+                "'": "&#39;"
+            };
+
+            return characters[character];
+
+        });
+
+    }
+
+
+    // GENERATE COLOUR CSS FOR EXPORTED HTML
+
+    function generateColourCSS() {
+
+        const backgroundRule = settings.gradientEnabled
+
+            ? `
+                background-color: transparent !important;
+                background-image: linear-gradient(
+                    ${settings.gradientDirection},
+                    var(--color-${settings.colours.start}),
+                    var(--color-${settings.colours.end})
+                ) !important;
+            `
+
+            : `
+                background-color: var(--color-${settings.colours.background}) !important;
+                background-image: none !important;
+            `;
+
+        return `
+
+            .hero {
+                ${backgroundRule}
+            }
+
+            .hero h1 {
+                color: var(--color-${settings.colours.h1}) !important;
+            }
+
+            .hero h2 {
+                color: var(--color-${settings.colours.h2}) !important;
+            }
+
+        `;
+
+    }
+
+
+    // GENERATE STANDALONE HTML
+
+    function generateHTML() {
+
+        const headingText = escapeHTML(heroHeading.textContent);
+        const subheadingText = escapeHTML(heroSubheading.textContent);
+
+        const heroClasses = [
+
+            "hero",
+
+            settings.dark ? "hero-dark" : "hero-light",
+
+            settings.centre ? "hero-centre" : "",
+
+            settings.minHeight ? "hero-min-height" : "",
+
+            settings.h1Serif ? "hero-h1-serif" : "",
+
+            settings.h2Serif ? "hero-h2-serif" : ""
+
+        ].filter(Boolean).join(" ");
+
+
+        const subheadingHTML = settings.showH2
+
+            ? `<h2>${subheadingText}</h2>`
+
+            : "";
+
+
+        const exportedSpacingCSS = `
+
+            .hero h1 {
+                letter-spacing: ${settings.h1Spacing}em;
+            }
+
+            .hero h2 {
+                letter-spacing: ${settings.h2Spacing}em;
+            }
+
+        `;
+
+
+        const exportedColourCSS = generateColourCSS();
+
+
+        return `<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>My Hero Block</title>
+
+    <meta name="description" content="Short, unique description of web page. Often used as the snippet shown in search results. About 120 characters is ideal.">
+
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"><\/script>
+
+    <style type="text/tailwindcss">
+        @source inline("bg-{slate,gray,zinc,neutral,stone,red,orange,amber,yellow,lime,green,emerald,teal,cyan,sky,blue,indigo,violet,purple,fuchsia,pink,rose}-{50,100,200,300,400,500,600,700,800,900,950} bg-black bg-white");
+    </style>
+
+    <style type="text/tailwindcss">
+
+        .hero {
+            @apply flex flex-col justify-center px-6 py-12 md:px-16;
+        }
+
+        .hero-content {
+            @apply w-full max-w-5xl;
+        }
+
+        .hero-light {
+            @apply bg-slate-50;
+        }
+
+        .hero-dark {
+            @apply bg-slate-900;
+        }
+
+        .hero-centre {
+            @apply text-center;
+        }
+
+        .hero-min-height {
+            @apply min-h-[480px] md:min-h-[85vh];
+        }
+
+        .hero h1 {
+            @apply mb-6 text-4xl font-bold tracking-tight text-slate-900 md:text-6xl break-words;
+        }
+
+        .hero h2 {
+            @apply text-xl leading-relaxed text-slate-700 md:text-2xl break-words;
+        }
+
+        .hero-dark h1 {
+            @apply text-slate-50;
+        }
+
+        .hero-dark h2 {
+            @apply text-slate-300;
+        }
+
+        .hero-centre .hero-content {
+            @apply mx-auto;
+        }
+
+        .hero h2[hidden] {
+            display: none;
+        }
+
+        .hero-h1-serif h1 {
+            @apply font-serif;
+        }
+
+        .hero-h2-serif h2 {
+            @apply font-serif;
+        }
+
+    </style>
+
+    <style>
+        ${exportedSpacingCSS}
+    </style>
+
+    <style>
+        ${exportedColourCSS}
+    </style>
+
+</head>
+
+<body>
+
+    <header class="${heroClasses}">
+
+        <div class="hero-content">
+
+            <h1>${headingText}</h1>
+
+            ${subheadingHTML}
+
+        </div>
+
+    </header>
+
+</body>
+</html>`;
+
+    }
+
+
+    // UPDATE FALLBACK EXPORT
+
+    function updateExportCode() {
+
+        exportCode.value = generateHTML();
+
+    }
+
+
+    // COPY HTML
+
+    async function copyHTML() {
+
+        const generatedHTML = generateHTML();
+
+        try {
+
+            if (!navigator.clipboard || !window.isSecureContext) {
+
+                throw new Error("Clipboard unavailable");
+
+            }
+
+            await navigator.clipboard.writeText(generatedHTML);
+
+            statusMessage.textContent =
+                "HTML copied—paste it into VS Code.";
+
+            exportArea.hidden = true;
+
+        } catch (error) {
+
+            exportCode.value = generatedHTML;
+
+            exportArea.hidden = false;
+
+            statusMessage.textContent =
+                "Automatic copying is unavailable. Copy the HTML from the text area below.";
+
+            exportCode.focus();
+            exportCode.select();
+
+        }
+
+    }
+
+
+    // EVENT LISTENERS
+
+    darkAppearance.addEventListener("change", function() {
+
+        settings.dark = darkAppearance.checked;
+
+        updateColourPreset();
+        updateHero();
+
+    });
+
+    centreText.addEventListener("change", updateHero);
+    minimumHeight.addEventListener("change", updateHero);
+    showSubheading.addEventListener("change", updateHero);
+
+    gradientBackground.addEventListener(
+        "change",
+        updateGradientMode
+    );
+
+    gradientDirection.addEventListener(
+        "change",
+        updateGradientDirection
+    );
+
+    h1Serif.addEventListener("change", updateHero);
+    h2Serif.addEventListener("change", updateHero);
+
+    h1Spacing.addEventListener("input", updateH1Spacing);
+    h2Spacing.addEventListener("input", updateH2Spacing);
+
+
+    // PALETTE TARGET BUTTONS
+
+    targetButtons.forEach(function(button) {
+
+        button.addEventListener("click", function() {
+
+            selectTarget(button.dataset.target);
+
+        });
+
+    });
+
+
+    // PALETTE SWATCH BUTTONS
+
+    paletteGrid.addEventListener("click", function(event) {
+
+        const swatch = event.target.closest(".swatch");
+
+        if (!swatch) {
+            return;
+        }
+
+        selectColour(swatch.dataset.colour);
+
+    });
+
+
+    // BLACK AND WHITE BUTTONS
+
+    specialSwatches.forEach(function(swatch) {
+
+        swatch.addEventListener("click", function() {
+
+            selectColour(swatch.dataset.colour);
+
+        });
+
+    });
+
+
+    // UPDATE EXPORTED HTML WHEN HEADINGS CHANGE
+
+    heroHeading.addEventListener("input", updateExportCode);
+    heroSubheading.addEventListener("input", updateExportCode);
+
+
+    // COPY BUTTON
+
+    copyButton.addEventListener("click", copyHTML);
+
+
+    // INITIALISE APPLICATION
+
+    createPalette();
+    updateHeadingSpacing();
+    updateHero();
+    updateHeroColours();
+
+</script>
+
+</body>
+</html>

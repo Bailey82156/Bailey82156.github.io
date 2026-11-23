@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>My Hero Block</title>
+
+    <meta name="description" content="Short, unique description of web page. Often used as the snippet shown in search results. About 120 characters is ideal.">
+
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+
+    <style type="text/tailwindcss">
+
+        .hero {
+            @apply flex flex-col justify-center px-6 py-12 md:px-16;
+        }
+
+        .hero-content {
+            @apply w-full max-w-5xl;
+        }
+
+        .hero-light {
+            @apply bg-slate-50;
+        }
+
+        .hero-dark {
+            @apply bg-slate-900;
+        }
+
+        .hero-centre {
+            @apply text-center;
+        }
+
+        .hero-min-height {
+            @apply min-h-[480px] md:min-h-[85vh];
+        }
+
+        .hero h1 {
+            @apply mb-6 text-4xl font-bold tracking-tight text-slate-900 md:text-6xl break-words;
+        }
+
+        .hero h2 {
+            @apply text-xl leading-relaxed text-slate-700 md:text-2xl break-words;
+        }
+
+        .hero-dark h1 {
+            @apply text-slate-50;
+        }
+
+        .hero-dark h2 {
+            @apply text-slate-300;
+        }
+
+        .hero-centre .hero-content {
+            @apply mx-auto;
+        }
+
+        .hero h2[hidden] {
+            display: none;
+        }
+
+        .hero-h1-serif h1 {
+            @apply font-serif;
+        }
+
+        .hero-h2-serif h2 {
+            @apply font-serif;
+        }
+
+    </style>
+
+    <style>
+
+        
+
+        .hero h1 {
+            letter-spacing: 0.02em;
+        }
+
+        .hero h2 {
+            letter-spacing: -0.025em;
+        }
+
+            
+
+    </style>
+
+</head>
+
+<body>
+
+    <header class="hero hero-dark hero-min-height hero-h1-serif">
+
+        <div class="hero-content">
+
+            <h1 class="hero-heading">Lorem ipsum dolor sit amet</h1>
+
+            <h2 class="hero-subheading">Consectetur adipiscing elit. Integer vitae libero ac risus egestas placerat.</h2>
+
+        </div>
+
+    </header>
+
+</body>
+</html>
